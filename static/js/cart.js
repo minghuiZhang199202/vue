@@ -3,7 +3,10 @@ var vm = new Vue({
     data:{
         totalMoney:0,
         productList:[],
-        checkAll:false
+        checkAll:false,
+        totalPrice:0,
+        delFlag:false,
+        currentProduct:{}
     },
     filters:{
         formatMoney:function (value) {
@@ -32,6 +35,7 @@ var vm = new Vue({
             }else{
                 product.productQuantity == 1 ? product.productQuantity:product.productQuantity --;
             }
+            this.calulateTotalMoneys();
         },
         selectedProduct:function (product) {
             if (typeof product.checked === "undefined"){
@@ -40,25 +44,44 @@ var vm = new Vue({
             }else{
                 product.checked = !product.checked;
             }
+            this.calulateTotalMoneys();
         },
-        selectedAll:function(){
-            this.checkAll = ! this.checkAll;
-            if (this.checkAll){
-                this.productList.forEach(function (value,index) {
-                    this.selectedProduct(value);
-                    value.checked = true;
-                })
-            }
+        selectedAll:function(flag){
+            this.checkAll = flag;
+            var _this = this;
+            this.productList.forEach(function (product,index) {
+                if (typeof product.checked === "undefined"){
+                    Vue.set(product,"checked",_this.checkAll);
+                }else{
+                    product.checked = _this.checkAll;
+                }
+            })
+            this.calulateTotalMoneys();
+        },
+        calulateTotalMoneys:function () {
+            this.totalPrice = 0;
+            var _this = this;
+            this.productList.forEach(function (product,index) {
+                if (product.checked)
+                _this.totalPrice += product.productPrice * product.productQuantity;
+            })
+        },
+        delProduct:function(product){
+            this.delFlag = true;
+            this.currentProduct = product;
+        },
+        delConfirm:function () {
+           var index = this.productList.indexOf(this.currentProduct);
+           this.productList.splice(index,1);
+            this.delFlag = false;
         }
+
+
     }
+
 });
 Vue.filter("money",function (value,type) {
     return "￥" + value.toFixed(2) + type;
 })
 
-
-/*
-*
-*
-* */
 
